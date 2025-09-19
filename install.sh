@@ -1,282 +1,116 @@
 #!/bin/sh
-# LINUXTOYS QUICK-INSTALLER (POSIX /bin/sh)
+# LinuxToys-Arch Quick Installer
 
-echo "================== LINUXTOYS QUICK-INSTALLER ===================="
-printf "Do you wish to install or update LinuxToys? (y/n)\n"
-# shellcheck disable=SC2162
-read -r answer
-answer=$(printf '%s' "$answer" | tr '[:upper:]' '[:lower:]')
-if [ "$answer" != "y" ]; then
-    echo "===== CANCELLED ====="
-    echo "Installation aborted."
-    sleep 3
-    exit 100
-fi
+echo "================== LinuxToys-Arch Installer ===================="
+echo "Installing LinuxToys optimized for Arch Linux and derivatives"
+echo
 
-# Garante HOME e sai com erro claro se falhar
-cd "$HOME" || {
-    echo "============ ERROR ============="
-    echo "Fatal error: cannot change directory"
-    exit 2
-}
-
-# Descobre a última tag via GitHub API (sem bashisms)
-tag=$(
-    curl -fsSL "https://api.github.com/repos/psygreg/linuxtoys/releases/latest" \
-    | grep -o '"tag_name": *"[^"]*"' \
-    | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/'
-)
-if [ -z "$tag" ]; then
-    echo "============ ERROR ============="
-    echo "Could not determine latest release tag from GitHub."
-    exit 3
-fi
-
-# Helper de download: tenta wget silencioso; se falhar, usa curl -O
-dl_file() {
-    # $1 = URL
-    # $2 = filename esperado
-    if command -v wget >/dev/null 2>&1; then
-        wget -q "$1" -O "$2" || {
-            if command -v curl >/dev/null 2>&1; then
-                curl -fsSL "$1" -o "$2" || return 1
-            else
-                return 1
-            fi
-        }
-    elif command -v curl >/dev/null 2>&1; then
-        curl -fsSL "$1" -o "$2" || return 1
-    else
-        return 1
-    fi
-    return 0
-}
-
-# Caminhos de artefatos por família
-deb_pkg="linuxtoys_${tag}-1_amd64.deb"
-deb_url="https://github.com/psygreg/linuxtoys/releases/download/${tag}/${deb_pkg}"
-
-rpm_pkg="linuxtoys-${tag}-1.x86_64.rpm"
-rpm_url="https://github.com/psygreg/linuxtoys/releases/download/${tag}/${rpm_pkg}"
-
-arch_pkg="PKGBUILD"
-arch_post_inst="linuxtoys.install"
-arch_url="https://github.com/psygreg/linuxtoys/releases/download/${tag}/${arch_pkg}"
-arch_url_post="https://github.com/psygreg/linuxtoys/releases/download/${tag}/${arch_post_inst}"
-
-# Caso rpm-ostree (ex.: Silverblue/ Kinoite)
-if command -v rpm-ostree >/dev/null 2>&1; then
-    echo "Detected rpm-ostree system."
-    echo "Downloading: $rpm_pkg"
-    if ! dl_file "$rpm_url" "$rpm_pkg"; then
-        echo "============ ERROR ============="
-        echo "Failed to download: $rpm_url"
-        exit 4
-    fi
-
-    if rpm -qi linuxtoys >/dev/null 2>&1; then
-        sudo rpm-ostree remove linuxtoys || {
-            echo "Failed to remove existing linuxtoys."
-            rm -f "$rpm_pkg"
-            exit 5
-        }
-    fi
-    sudo rpm-ostree install "./$rpm_pkg" || {
-        echo "Installation failed (rpm-ostree)."
-        rm -f "$rpm_pkg"
-        exit 6
-    }
-    rm -f "$rpm_pkg"
-    echo "================== SUCCESS ===================="
-    echo "LinuxToys installed or updated! Reboot to apply."
-    sleep 3
-    exit 0
-fi
-
-# Demais distros via /etc/os-release
-if [ -r /etc/os-release ]; then
-    # shellcheck disable=SC1091
-    . /etc/os-release
-else
-    echo "========== ERROR ============"
-    echo "Unsupported operating system (no /etc/os-release)."
-    sleep 3
+# Check if running on Arch Linux
+if ! command -v pacman >/dev/null 2>&1; then
+    echo "❌ ERROR: This installer is for Arch Linux only"
+    echo "This fork is optimized exclusively for Arch Linux and derivatives:"
+    echo "- Arch Linux"
+    echo "- EndeavourOS" 
+    echo "- Manjaro"
+    echo "- CachyOS"
+    echo "- Garuda Linux"
+    echo "- ArcoLinux"
+    echo
+    echo "For other distributions, please use the original LinuxToys:"
+    echo "https://github.com/psygreg/linuxtoys"
     exit 1
 fi
 
-installed=false
+echo "✅ Detected Arch Linux system"
+echo
 
-# 1) Detecta por ID exato
-case "${ID:-}" in
-    debian|ubuntu)
-        echo "Detected Debian/Ubuntu."
-        echo "Downloading: $deb_pkg"
-        if ! dl_file "$deb_url" "$deb_pkg"; then
-            echo "============ ERROR ============="
-            echo "Failed to download: $deb_url"
-            exit 4
-        fi
-        sudo apt update || true
-        sudo apt install -y "./$deb_pkg" || {
-            echo "Installation failed (apt)."
-            rm -f "$deb_pkg"
-            exit 6
-        }
-        rm -f "$deb_pkg"
-        installed=true
-        ;;
-    fedora|rhel|centos|rocky|almalinux)
-            echo "Detected RHEL/Fedora-like by ID."
-            echo "Downloading: $rpm_pkg"
-            if ! dl_file "$rpm_url" "$rpm_pkg"; then
-                echo "============ ERROR ============="
-                echo "Failed to download: $rpm_url"
-                exit 4
-            fi
-            if command -v dnf >/dev/null 2>&1; then
-                sudo dnf install -y "./$rpm_pkg" || {
-                    echo "Installation failed (dnf)."
-                    rm -f "$rpm_pkg"
-                    exit 6
-                }
-            else
-                sudo yum install -y "./$rpm_pkg" || {
-                    echo "Installation failed (yum)."
-                    rm -f "$rpm_pkg"
-                    exit 6
-                }
-            fi
-            rm -f "$rpm_pkg"
-            installed=true
-            ;;
-    suse|opensuse)
-        echo "Detected SUSE/OpenSUSE by ID."
-        echo "Downloading: $rpm_pkg"
-        if ! dl_file "$rpm_url" "$rpm_pkg"; then
-            echo "============ ERROR ============="
-            echo "Failed to download: $rpm_url"
-            exit 4
-        fi
-        sudo zypper install -y "./$rpm_pkg" || {
-            echo "Installation failed (zypper)."
-            rm -f "$rpm_pkg"
-            exit 6
-        }
-        rm -f "$rpm_pkg"
-        installed=true
-        ;;
-    arch|cachyos)
-        echo "Detected Arch-like by ID."
-        echo "Downloading: $arch_pkg"
-        if ! dl_file "$arch_url" "$arch_pkg"; then
-            echo "============ ERROR ============="
-            echo "Failed to download: $arch_url"
-            exit 4
-        fi
-        if ! dl_file "$arch_url_post" "$arch_post_inst"; then
-            echo "============ ERROR ============="
-            echo "Failed to download: $arch_url_post"
-            exit 4
-        fi
-        makepkg -i || {
-            echo "Installation failed (pacman)."
-            rm -f "$arch_pkg"
-            rm -f "$arch_post_inst"
-            exit 6
-        }
-        rm -f "$arch_pkg"
-        rm -f "$arch_post_inst"
-        installed=true
-        ;;
-esac
+# Check dependencies
+echo "Checking dependencies..."
+missing_deps=""
 
-# 2) Se não decidiu pelo ID, tenta por ID_LIKE
-if [ "$installed" != "true" ]; then
-    case "${ID_LIKE:-}" in
-        *debian*|*ubuntu*)
-            echo "Detected Debian/Ubuntu-like by ID_LIKE."
-            echo "Downloading: $deb_pkg"
-            if ! dl_file "$deb_url" "$deb_pkg"; then
-                echo "============ ERROR ============="
-                echo "Failed to download: $deb_url"
-                exit 4
-            fi
-            sudo apt update || true
-            sudo apt install -y "./$deb_pkg" || {
-                echo "Installation failed (apt)."
-                rm -f "$deb_pkg"
-                exit 6
-            }
-            rm -f "$deb_pkg"
-            installed=true
-            ;;
-        *rhel*|*fedora*)
-            echo "Detected RHEL/Fedora-like by ID_LIKE."
-            echo "Downloading: $rpm_pkg"
-            if ! dl_file "$rpm_url" "$rpm_pkg"; then
-                echo "============ ERROR ============="
-                echo "Failed to download: $rpm_url"
-                exit 4
-            fi
-            if command -v dnf >/dev/null 2>&1; then
-                sudo dnf install -y "./$rpm_pkg" || {
-                    echo "Installation failed (dnf)."
-                    rm -f "$rpm_pkg"
-                    exit 6
-                }
-            else
-                sudo yum install -y "./$rpm_pkg" || {
-                    echo "Installation failed (yum)."
-                    rm -f "$rpm_pkg"
-                    exit 6
-                }
-            fi
-            rm -f "$rpm_pkg"
-            installed=true
-            ;;
-        *suse*)
-            echo "Detected SUSE/OpenSUSE by ID_LIKE."
-            echo "Downloading: $rpm_pkg"
-            if ! dl_file "$rpm_url" "$rpm_pkg"; then
-                echo "============ ERROR ============="
-                echo "Failed to download: $rpm_url"
-                exit 4
-            fi
-            sudo zypper install -y "./$rpm_pkg" || {
-                echo "Installation failed (zypper)."
-                rm -f "$rpm_pkg"
-                exit 6
-            }
-            rm -f "$rpm_pkg"
-            installed=true
-            ;;
-        *arch*)
-            echo "Detected Arch-like by ID_LIKE."
-            echo "Downloading: $arch_pkg"
-            if ! dl_file "$arch_url" "$arch_pkg"; then
-                echo "============ ERROR ============="
-                echo "Failed to download: $arch_url"
-                exit 4
-            fi
-            sudo pacman -U --noconfirm "./$arch_pkg" || {
-                echo "Installation failed (pacman)."
-                rm -f "$arch_pkg"
-                exit 6
-            }
-            rm -f "$arch_pkg"
-            installed=true
-            ;;
-    esac
+if ! command -v python >/dev/null 2>&1; then
+    missing_deps="$missing_deps python"
 fi
 
-if [ "$installed" = "true" ]; then
-    echo "========== SUCCESS ============"
-    echo "LinuxToys installed or updated!"
-    sleep 3
-    exit 0
+if ! command -v zenity >/dev/null 2>&1; then
+    missing_deps="$missing_deps zenity"
 fi
 
-echo "========== ERROR ============"
-echo "Unsupported operating system."
-sleep 3
-exit 1
+if ! command -v git >/dev/null 2>&1; then
+    missing_deps="$missing_deps git"
+fi
+
+if ! command -v curl >/dev/null 2>&1; then
+    missing_deps="$missing_deps curl"
+fi
+
+if [ -n "$missing_deps" ]; then
+    echo "Installing missing dependencies: $missing_deps"
+    echo "Please enter your password when prompted:"
+    sudo pacman -S --noconfirm python python-gobject gtk3 zenity git curl wget
+fi
+
+echo "✅ Dependencies satisfied"
+echo
+
+# Get latest release
+echo "Downloading latest LinuxToys-Arch..."
+tag=$(curl -fsSL "https://api.github.com/repos/SEU_USUARIO/linuxtoys-arch/releases/latest" 2>/dev/null | grep -o '"tag_name": *"[^"]*"' | sed 's/.*"tag_name": *"\([^"]*\)".*/\1/')
+
+if [ -z "$tag" ]; then
+    echo "⚠️  No releases found, using main branch"
+    tag="main"
+fi
+
+echo "Installing version: $tag"
+
+# Download and extract
+cd "$HOME" || exit 1
+curl -fsSL "https://github.com/SEU_USUARIO/linuxtoys-arch/archive/refs/heads/main.tar.gz" -o linuxtoys-arch.tar.gz
+
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Failed to download LinuxToys-Arch"
+    exit 1
+fi
+
+# Extract
+tar -xzf linuxtoys-arch.tar.gz
+rm linuxtoys-arch.tar.gz
+
+# Move to final location
+if [ -d "linuxtoys-arch" ]; then
+    rm -rf "$HOME/.local/share/linuxtoys-arch" 2>/dev/null
+    mv linuxtoys-arch "$HOME/.local/share/linuxtoys-arch"
+else
+    echo "❌ ERROR: Extraction failed"
+    exit 1
+fi
+
+# Create desktop entry
+mkdir -p "$HOME/.local/share/applications"
+cat > "$HOME/.local/share/applications/linuxtoys-arch.desktop" << EOF
+[Desktop Entry]
+Name=LinuxToys-Arch
+Comment=Tools for Arch Linux
+Exec=$HOME/.local/share/linuxtoys-arch/p3/run.py
+Icon=$HOME/.local/share/linuxtoys-arch/src/linuxtoys.svg
+Terminal=false
+Type=Application
+Categories=System;
+EOF
+
+# Create symlink for easy access
+mkdir -p "$HOME/.local/bin"
+ln -sf "$HOME/.local/share/linuxtoys-arch/p3/run.py" "$HOME/.local/bin/linuxtoys-arch"
+
+echo
+echo "🎉 LinuxToys-Arch installed successfully!"
+echo
+echo "You can now run LinuxToys-Arch in several ways:"
+echo "1. From Applications menu: LinuxToys-Arch"
+echo "2. From terminal: linuxtoys-arch"
+echo "3. Direct execution: $HOME/.local/share/linuxtoys-arch/p3/run.py"
+echo
+echo "To update LinuxToys-Arch, simply run this installer again."
+echo
+echo "For more information, visit: https://github.com/SEU_USUARIO/linuxtoys-arch"
