@@ -30,17 +30,11 @@ This fork removes support for other distributions to focus exclusively on Arch L
 ### Quick Installation
 ```bash
 # Clone the repository
-git clone https://github.com/SEU_USUARIO/linuxtoys-arch.git
+git clone https://github.com/Lakentio/linuxtoys-arch.git
 cd linuxtoys-arch
 
 # Run directly
 ./p3/run.py
-```
-
-### Automatic Installation (Coming Soon)
-```bash
-# This will be available once we create releases
-curl -fsSL https://raw.githubusercontent.com/SEU_USUARIO/linuxtoys-arch/main/install.sh | bash
 ```
 
 ### Manual Installation
