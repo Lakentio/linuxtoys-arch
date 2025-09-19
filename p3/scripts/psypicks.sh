@@ -53,14 +53,14 @@ get_heroic () {
     elif command -v pacman &> /dev/null; then
         if ! pacman -Qi "heroic" 2>/dev/null 1>&2; then
             wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x64.pacman"
-            sudo pacman -U --noconfirm "Heroic-${ver}-linux-x64.pacman"
+            echo "$PASSWD" | sudo -S pacman -U --noconfirm "Heroic-${ver}-linux-x64.pacman"
             rm "Heroic-${ver}-linux-x64.pacman"
         else
             local hostver=$(pacman -Q "heroic" 2>/dev/null | awk '{print $2}' | cut -d'-' -f1)
             if [[ "$hostver" != "$ver" ]]; then
                 wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x64.pacman"
-                sudo pacman -R --noconfirm heroic
-                sudo pacman -U --noconfirm "Heroic-${ver}-linux-x64.pacman"
+                echo "$PASSWD" | sudo -S pacman -R --noconfirm heroic
+                echo "$PASSWD" | sudo -S pacman -U --noconfirm "Heroic-${ver}-linux-x64.pacman"
                 rm "Heroic-${ver}-linux-x64.pacman"
             else
                 zenity --info --text "$msg281" --height=300 --width=300
@@ -127,7 +127,7 @@ if command -v flatpak &> /dev/null && (command -v dnf &> /dev/null || command -v
         packages=(steam-devices vlc)
     elif command -v pacman &> /dev/null; then
         sudo sed -i -e '/^#\[multilib\]$/s/^#//' -e '/^#Include = \/etc\/pacman\.d\/mirrorlist$/s/^#//' /etc/pacman.conf
-        sudo pacman -Syu
+        echo "$PASSWD" | sudo -S pacman -Syu
         packages=(steam steam-devices lutris vlc)
     fi
     if [[ "$XDG_CURRENT_DESKTOP" == *"GNOME"* ]]; then
@@ -156,3 +156,4 @@ if command -v flatpak &> /dev/null && (command -v dnf &> /dev/null || command -v
 else
     nonfatal "$msg077"
 fi
+unset PASSWD

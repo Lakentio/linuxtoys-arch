@@ -17,13 +17,14 @@ source "$SCRIPT_DIR/libs/helpers.lib"
 sudo_rq
 # needs chaotic AUR
 chaotic_aur_lib
-sudo pacman -S nvidia-470xx-dkms nvidia-470xx-utils nvidia-470xx-settings
+echo "$PASSWD" | sudo -S pacman -S nvidia-470xx-dkms nvidia-470xx-utils nvidia-470xx-settings
 cd $HOME
 # set proper DRM mode on systemd
 wget https://raw.githubusercontent.com/psygreg/linuxtoys/master/resources/10-nvidia.conf
-sudo cp 10-nvidia.conf /etc/modprobe.d/
+echo "$PASSWD" | sudo -S cp 10-nvidia.conf /etc/modprobe.d/
 sleep 1
 rm 10-nvidia.conf
 # refresh boot image
-sudo mkinitcpio -P
+echo "$PASSWD" | sudo -S mkinitcpio -P
 zenity --info --title "Nvidia Drivers" --text "$msg036" --width 300 --height 300
+unset PASSWD

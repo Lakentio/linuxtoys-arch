@@ -14,6 +14,7 @@ source "$SCRIPT_DIR/libs/linuxtoys.lib"
 _lang_
 source "$SCRIPT_DIR/libs/lang/${langfile}.lib"
 sudo_rq
-sudo pacman -S nvidia-dkms nvidia-utils nvidia-settings
-sudo mkinitcpio -P
+echo "$PASSWD" | sudo -S pacman -S nvidia-dkms nvidia-utils nvidia-settings
+echo "$PASSWD" | sudo -S mkinitcpio -P
 zenity --info --title "Nvidia Drivers" --text "$msg036" --width 300 --height 300
+unset PASSWD

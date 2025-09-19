@@ -4,18 +4,14 @@ source /etc/os-release
 # sudo request
 sudo_rq () { 
     # Get password from zenity
-    local password
-    if ! password=$(zenity --password 2>/dev/null); then
-        fatal "Password dialog was cancelled or failed."
-    fi
-    # Validate password with sudo
-    if echo "$password" | timeout 5 sudo -S -p "" true 2>/dev/null; then
-        # Keep sudo session alive for a bit
+    PASSWD=$(zenity --password --title="Autenticação requerida") || fatal "Password dialog was cancelled or failed."
+
+    if echo "$PASSWD" | timeout 5 sudo -S -p "" true 2>/dev/null; then
         sudo -v 2>/dev/null
-        unset password
+        export PASSWD   # torna a senha disponível para subprocessos do script
         return 0
     else
-        unset password
+        unset PASSWD
         fatal "Wrong password. Do you have sudo?"
     fi
 }
@@ -71,7 +67,7 @@ _install_ () {
                     if pacman -Qi "$pak" 2>/dev/null 1>&2; then
                         continue
                     else
-                        sudo pacman -S --noconfirm "$pak"
+                        echo "$PASSWD" | sudo -S pacman -S --noconfirm "$pak"
                     fi
                 done
             elif [[ "$ID_LIKE" =~ (rhel|fedora) ]] || [[ "$ID" =~ (fedora) ]]; then
@@ -93,6 +89,10 @@ _install_ () {
             fi
         fi
         unset _packages
+        # Limpeza da senha para Arch
+        if [[ "$ID" =~ ^(arch|cachyos)$ ]] || [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]]; then
+            unset PASSWD
+        fi
     fi
 }
 

@@ -30,7 +30,7 @@ elif [[ "$ID_LIKE" =~ (rhel|fedora) ]] || [[ "$ID" =~ (fedora|rhel) ]]; then
 elif [[ "$ID" =~ ^(arch|cachyos)$ ]] || [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]]; then
 	# Arch Linux installation
 	wget -O windscribe.pkg.tar.zst "https://windscribe.com/install/desktop/linux_zst_x64"
-	sudo pacman -U --noconfirm windscribe.pkg.tar.zst
+	echo "$PASSWD" | sudo -S pacman -U --noconfirm windscribe.pkg.tar.zst
 	rm -f windscribe.pkg.tar.zst
 elif [[ "$ID" =~ (suse|opensuse) ]] || [[ "$ID_LIKE" == *suse* ]]; then
 	# openSUSE installation
@@ -41,3 +41,5 @@ else
     fatal "$msg077"
 fi
 zeninf "$msg018"
+
+unset PASSWD

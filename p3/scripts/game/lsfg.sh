@@ -45,7 +45,7 @@ else
         elif [[ "$ID" =~ ^(arch|cachyos)$ ]] || [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]]; then
             if [[ "$(pacman -Qi lsfg-vk 2>/dev/null | awk -F': ' '/^Version/ {print $2}' | sed 's/^v//')" != "$ver" ]]; then
                 wget https://github.com/PancakeTAS/lsfg-vk/releases/download/${tag}/lsfg-vk-${ver}.x86_64.tar.zst
-                sudo pacman -U --noconfirm lsfg-vk-${ver}.x86_64.tar.zst
+                echo "$PASSWD" | sudo -S pacman -U --noconfirm lsfg-vk-${ver}.x86_64.tar.zst
                 rm lsfg-vk-${ver}.x86_64.tar.zst
             fi
         fi
@@ -89,7 +89,7 @@ else
             rm lsfg-vk-${ver}.x86_64.rpm
         elif [[ "$ID" =~ ^(arch|cachyos)$ ]] || [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]]; then
             wget https://github.com/PancakeTAS/lsfg-vk/releases/download/${tag}/lsfg-vk-${ver}.x86_64.tar.zst
-            sudo pacman -U --noconfirm lsfg-vk-${ver}.x86_64.tar.zst
+            echo "$PASSWD" | sudo -S pacman -U --noconfirm lsfg-vk-${ver}.x86_64.tar.zst
             rm lsfg-vk-${ver}.x86_64.tar.zst
         fi
         # first time setup: dll tracker
@@ -123,3 +123,4 @@ else
         fi
     fi
 fi
+unset PASSWD

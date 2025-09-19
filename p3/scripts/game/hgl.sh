@@ -52,15 +52,15 @@ elif [ "$ID" == "arch" ] || [ "$ID" == "cachyos" ] || [[ "$ID_LIKE" =~ "arch" ]]
     cd $HOME
     if ! pacman -Qi "heroic" 2>/dev/null 1>&2; then
         wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x64.pacman"
-        sudo pacman -U --noconfirm ./Heroic-${ver}-linux-x64.pacman || { echo "Heroic installation failed"; rm -f "Heroic-${ver}-linux-x64.pacman"; return 1; }
+        echo "$PASSWD" | sudo -S pacman -U --noconfirm ./Heroic-${ver}-linux-x64.pacman || { echo "Heroic installation failed"; rm -f "Heroic-${ver}-linux-x64.pacman"; return 1; }
         rm "Heroic-${ver}-linux-x64.pacman"
     else
         # update if already installed
         hostver=$(pacman -Q "heroic" 2>/dev/null | awk '{print $2}' | cut -d'-' -f1)
         if [[ "$hostver" != "$ver" ]]; then
             wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x64.pacman"
-            sudo pacman -R --noconfirm heroic
-            sudo pacman -U --noconfirm ./Heroic-${ver}-linux-x64.pacman || { echo "Heroic update failed"; rm -f "Heroic-${ver}-linux-x64.pacman"; return 1; }
+            echo "$PASSWD" | sudo -S pacman -R --noconfirm heroic
+            echo "$PASSWD" | sudo -S pacman -U --noconfirm ./Heroic-${ver}-linux-x64.pacman || { echo "Heroic update failed"; rm -f "Heroic-${ver}-linux-x64.pacman"; return 1; }
             rm "Heroic-${ver}-linux-x64.pacman"
         else
             zeninf "$msg281" 
@@ -73,3 +73,4 @@ else
 fi
 unset tag
 unset ver
+unset PASSWD

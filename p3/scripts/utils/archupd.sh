@@ -14,7 +14,8 @@ source "$SCRIPT_DIR/libs/lang/${langfile}.lib"
 source "$SCRIPT_DIR/libs/helpers.lib"
 sudo_rq
 chaotic_aur_lib
-sudo pacman -S --noconfirm arch-update
+echo "$PASSWD" | sudo -S pacman -S --noconfirm arch-update
 sleep 1
 arch-update --tray --enable
 zeninf "$msg018"
+unset PASSWD

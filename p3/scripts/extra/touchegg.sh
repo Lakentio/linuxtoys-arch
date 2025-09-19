@@ -31,13 +31,14 @@ if [ "$XDG_SESSION_TYPE" != "wayland" ]; then
         elif [[ "$ID_LIKE" == *suse* ]] || [ "$ID" == "suse" ]; then
             sudo zypper in -y touchegg
         elif [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]] || [[ "$ID" =~ ^(arch|cachyos)$ ]]; then
-            sudo pacman -S --noconfirm touchegg
+            echo "$PASSWD" | sudo -S pacman -S --noconfirm touchegg
         fi
-        sudo systemctl enable touchegg.service
-        sudo systemctl start touchegg
+        echo "$PASSWD" | sudo -S systemctl enable touchegg.service
+        echo "$PASSWD" | sudo -S systemctl start touchegg
     else
         nonfatal "$msg077"
     fi
 else
     fatal "$msg077"
 fi
+unset PASSWD

@@ -23,6 +23,7 @@ if [[ "$ID_LIKE" =~ (rhel|fedora) ]] || [[ "$ID" =~ (fedora) ]]; then
         sudo dnf install akmod-wl -y
     fi
 elif [[ "$ID" =~ ^(arch|cachyos)$ ]] || [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]]; then
-    sudo pacman -S --noconfirm linux-headers broadcom-wl-dkms
+    echo "$PASSWD" | sudo -S pacman -S --noconfirm linux-headers broadcom-wl-dkms
 fi
 zeninf "$msg036"
+unset PASSWD
