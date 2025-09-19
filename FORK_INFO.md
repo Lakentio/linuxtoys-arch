@@ -28,14 +28,12 @@ This is a specialized fork of LinuxToys optimized exclusively for Arch Linux and
 - `README_ARCH.md` - Detailed Arch-specific documentation
 
 ## Branch Structure
-- `arch` - Main development branch for Arch Linux
-- `main` - Kept for reference to original project
+- `main` - Main development branch for Arch Linux
 
 ## Future Plans
 1. Create AUR package for easy installation
 2. Add Arch-specific features and optimizations
-3. Build community around Arch Linux users
-4. Maintain compatibility with upstream when relevant
+3. Maintain compatibility with upstream when relevant
 
 ## How to Contribute
 1. Fork this repository
