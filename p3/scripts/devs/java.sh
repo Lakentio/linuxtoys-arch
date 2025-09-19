@@ -15,17 +15,7 @@ jdk_install () {
     local javas=($_jdk8 $_jdk11 $_jdk17 $_jdk21 $_jdk24)
     local packages=()
     for jav in "${javas[@]}"; do
-        if [[ "$ID_LIKE" == *debian* ]] || [[ "$ID_LIKE" == *ubuntu* ]] || [ "$ID" == "debian" ] || [ "$ID" == "ubuntu" ]; then
-            packages+=(openjdk-${jav}-jdk openjdk-${jav}-jre)
-        elif [[ "$ID_LIKE" =~ (rhel|fedora) ]] || [[ "$ID" =~ (fedora) ]]; then
-            if [ $jav == "8" ]; then
-                packages+=(java-1.8.0-openjdk java-1.8.0-openjdk-devel)
-                continue
-            fi
-            packages+=(java-${jav}-openjdk java-${jav}-openjdk-devel)
-        elif [[ "$ID_LIKE" == *suse* ]]; then
-            packages+=(java-${jav}-openjdk java-${jav}-openjdk-devel)
-        fi
+        packages+=(jdk${jav}-openjdk)
     done
     sudo_rq
     _install_

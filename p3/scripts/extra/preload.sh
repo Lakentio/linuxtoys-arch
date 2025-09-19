@@ -23,24 +23,3 @@ _cram=$(( total_gb ))
 if (( _cram > 12 )); then
     if zenity --question --text "$msg208" --width 360 --height 300; then
         sudo_rq
-        if [ "$ID" == "fedora" ] || [ "$ID" == "rhel" ] ||  [[ "$ID_LIKE" =~ "fedora" ]]; then
-            if command -v rpm-ostree &>/dev/null; then
-                cd $HOME
-                wget https://copr.fedorainfracloud.org/coprs/elxreno/preload/repo/fedora-$(rpm -E %fedora)/elxreno-preload-fedora-$(rpm -E %fedora).repo
-                sudo install -o 0 -g 0 elxreno-preload-fedora-$(rpm -E %fedora).repo /etc/yum.repos.d/elxreno-preload-fedora-$(rpm -E %fedora).repo
-                rpm-ostree refresh-md
-                rm elxreno-preload-fedora-$(rpm -E %fedora).repo
-            else
-                sudo dnf copr enable elxreno/preload -y
-            fi
-        elif [[ "$ID" =~ ^(arch|cachyos)$ ]] || [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]]; then
-            chaotic_aur_lib
-        fi
-        _packages=(preload)
-        _install_
-        sudo systemctl enable --now preload
-        zeninf "$msg036"
-    fi
-else
-    nonfatal "$msg228"
-fi

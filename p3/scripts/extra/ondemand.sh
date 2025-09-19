@@ -26,17 +26,3 @@ else
             if [ -f /etc/grub.d/01_intel_pstate_disable ]; then
                 sudo rm -f /etc/grub.d/01_intel_pstate_disable
                 # Update GRUB configuration
-                if [[ "$ID_LIKE" =~ (rhel|fedora) ]] || [[ "$ID" =~ (fedora) ]] || [[ "$ID_LIKE" == *suse* ]] || [[ "$ID" == *suse* ]]; then
-                    sudo grub2-mkconfig -o /boot/grub2/grub.cfg
-                elif [[ "$ID" =~ ^(arch)$ ]] || [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]]; then
-                    sudo grub-mkconfig -o /boot/grub/grub.cfg
-                elif [[ "$ID_LIKE" =~ (ubuntu|debian) ]] || [ "$ID" == "debian" ] || [ "$ID" == "ubuntu" ]; then
-                    sudo update-grub
-                fi
-            fi
-        fi
-        sudo systemctl disable set-ondemand-governor.service
-        sudo rm -f /etc/systemd/system/set-ondemand-governor.service
-    fi
-fi
-zeninf "$msg036"

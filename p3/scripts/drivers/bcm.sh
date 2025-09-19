@@ -15,15 +15,5 @@ _lang_
 source "$SCRIPT_DIR/libs/lang/${langfile}.lib"
 source "$SCRIPT_DIR/libs/helpers.lib"
 sudo_rq
-if [[ "$ID_LIKE" =~ (rhel|fedora) ]] || [[ "$ID" =~ (fedora) ]]; then
-    rpmfusion_chk
-    if command -v rpm-ostree &>/dev/null; then
-        sudo rpm-ostree install akmod-wl
-    else
-        sudo dnf install akmod-wl -y
-    fi
-elif [[ "$ID" =~ ^(arch|cachyos)$ ]] || [[ "$ID_LIKE" == *arch* ]] || [[ "$ID_LIKE" == *archlinux* ]]; then
-    echo "$PASSWD" | sudo -S pacman -S --noconfirm linux-headers broadcom-wl-dkms
-fi
 zeninf "$msg036"
 unset PASSWD
