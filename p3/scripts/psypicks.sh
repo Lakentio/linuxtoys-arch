@@ -17,71 +17,19 @@ source "$SCRIPT_DIR/libs/helpers.lib"
 get_heroic () {
     local tag=$(curl -s https://api.github.com/repos/Heroic-Games-Launcher/HeroicGamesLauncher/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
     local ver="${tag#v}"
-    if command -v dnf &> /dev/null; then
-        if ! rpm -qi "heroic" 2>/dev/null; then
-            wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x86_64.rpm"
-            sudo dnf in -y "Heroic-${ver}-linux-x86_64.rpm" || { echo "Heroic installation failed"; rm -f "Heroic-${ver}-linux-x86_64.rpm"; return 1; }
-            rm "Heroic-${ver}-linux-x86_64.rpm"
-        else
-            # update if already installed
-            local hostver=$(rpm -qi "heroic" 2>/dev/null | grep "^Version" | awk '{print $3}')
-            if [[ "$hostver" != "$ver" ]]; then
-                wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x86_64.rpm"
-                sudo dnf remove -y heroic
-                sudo dnf in -y "Heroic-${ver}-linux-x86_64.rpm" || { echo "Heroic update failed"; rm -f "Heroic-${ver}-linux-x86_64.rpm"; return 1; }
-                rm "Heroic-${ver}-linux-x86_64.rpm"
-            else
-                zenity --info --text "$msg281" --height=300 --width=300
-            fi
-        fi
-    elif command -v apt &> /dev/null; then
-        if ! dpkg -s "heroic" 2>/dev/null 1>&2; then
-            wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-amd64.deb"
-            sudo apt install -y "Heroic-${ver}-linux-amd64.deb" || { echo "Heroic installation failed"; rm -f "Heroic-${ver}-linux-amd64.deb"; return 1; }
-            rm "Heroic-${ver}-linux-amd64.deb"
-        else
-            local hostver=$(dpkg -l heroic 2>/dev/null | grep "^ii" | awk '{print $3}'| cut -d'-' -f1)
-            if [[ "$hostver" != "$ver" ]]; then
-                wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-amd64.deb"
-                sudo apt remove -y heroic
-                sudo apt install -y "Heroic-${ver}-linux-amd64.deb" || { echo "Heroic installation failed"; rm -f "Heroic-${ver}-linux-amd64.deb"; return 1; }
-                rm "Heroic-${ver}-linux-amd64.deb"
-            else
-                zenity --info --text "$msg281" --height=300 --width=300
-            fi
-        fi
-    elif command -v pacman &> /dev/null; then
-        if ! pacman -Qi "heroic" 2>/dev/null 1>&2; then
+    if ! pacman -Qi "heroic" 2>/dev/null 1>&2; then
+        wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x64.pacman"
+        echo "$PASSWD" | sudo -S pacman -U --noconfirm "Heroic-${ver}-linux-x64.pacman"
+        rm "Heroic-${ver}-linux-x64.pacman"
+    else
+        local hostver=$(pacman -Q "heroic" 2>/dev/null | awk '{print $2}' | cut -d'-' -f1)
+        if [[ "$hostver" != "$ver" ]]; then
             wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x64.pacman"
+            echo "$PASSWD" | sudo -S pacman -R --noconfirm heroic
             echo "$PASSWD" | sudo -S pacman -U --noconfirm "Heroic-${ver}-linux-x64.pacman"
             rm "Heroic-${ver}-linux-x64.pacman"
         else
-            local hostver=$(pacman -Q "heroic" 2>/dev/null | awk '{print $2}' | cut -d'-' -f1)
-            if [[ "$hostver" != "$ver" ]]; then
-                wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x64.pacman"
-                echo "$PASSWD" | sudo -S pacman -R --noconfirm heroic
-                echo "$PASSWD" | sudo -S pacman -U --noconfirm "Heroic-${ver}-linux-x64.pacman"
-                rm "Heroic-${ver}-linux-x64.pacman"
-            else
-                zenity --info --text "$msg281" --height=300 --width=300
-            fi
-        fi
-    elif command -v zypper &> /dev/null; then
-        if ! rpm -qi "heroic" 2>/dev/null; then
-            wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x86_64.rpm"
-            sudo zypper in -y "Heroic-${ver}-linux-x86_64.rpm" || { echo "Heroic installation failed"; rm -f "Heroic-${ver}-linux-x86_64.rpm"; return 1; }
-            rm "Heroic-${ver}-linux-x86_64.rpm"
-        else
-            # update if already installed
-            local hostver=$(rpm -qi "heroic" 2>/dev/null | grep "^Version" | awk '{print $3}')
-            if [[ "$hostver" != "$ver" ]]; then
-                wget "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/${tag}/Heroic-${ver}-linux-x86_64.rpm"
-                sudo zypper remove -y heroic
-                sudo zypper in -y "Heroic-${ver}-linux-x86_64.rpm" || { echo "Heroic update failed"; rm -f "Heroic-${ver}-linux-x86_64.rpm"; return 1; }
-                rm "Heroic-${ver}-linux-x86_64.rpm"
-            else
-                zenity --info --text "$msg281" --height=300 --width=300
-            fi
+            zenity --info --text "$msg281" --height=300 --width=300
         fi
     fi
 }

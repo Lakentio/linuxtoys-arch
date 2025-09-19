@@ -1,6 +1,8 @@
-# LinuxToys - Branch Arch
+# LinuxToys - Arch Linux Only
 
-Esta é uma versão específica do LinuxToys otimizada para **Arch Linux** e distribuições derivadas (EndeavourOS, Manjaro, CachyOS, etc.).
+Esta é uma versão específica do LinuxToys **EXCLUSIVAMENTE** para **Arch Linux** e distribuições derivadas (EndeavourOS, Manjaro, CachyOS, etc.).
+
+**IMPORTANTE**: Esta versão remove completamente o suporte para outras distribuições (Debian, Ubuntu, Fedora, SUSE, etc.) para focar apenas no Arch Linux.
 
 ## Problema Resolvido
 
@@ -83,12 +85,20 @@ Os seguintes scripts foram corrigidos para funcionar corretamente no Arch:
 
 ## Compatibilidade
 
-Esta versão é otimizada especificamente para:
+Esta versão é **EXCLUSIVAMENTE** para:
 - **Arch Linux**
 - **EndeavourOS**
 - **Manjaro**
 - **CachyOS**
+- **Garuda Linux**
+- **ArcoLinux**
 - Outras distribuições baseadas em Arch
+
+**NÃO SUPORTA**:
+- Debian/Ubuntu
+- Fedora/RHEL
+- openSUSE/SUSE
+- Outras distribuições não baseadas em Arch
 
 ## Manutenção
 
