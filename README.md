@@ -3,6 +3,9 @@ A collection of tools for **Arch Linux** in a user-friendly way. This is a speci
 
 ![LinuxToys](src/screenshot.png)
 
+# IMPORTANT
+This is the first version and just some scripts had tested, if someone had some error, create a issue.
+
 ## 🎯 Arch Linux Only
 This fork removes support for other distributions to focus exclusively on Arch Linux, providing:
 - **Simplified installation** using only `pacman`
