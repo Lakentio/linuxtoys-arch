@@ -21,6 +21,12 @@ _packages=(dkms make kernel-devel)
 _install_
 # ensure removal of older driver
 if rpm -qi rtl8821ce-dkms &>/dev/null; then
+    if [ "$ID" == "fedora" ] || [[ $ID_LIKE == *fedora* ]]; then
+        sudo dnf remove -y rtl8821ce-dkms
+    elif [ "$ID" == "suse" ] || [[ $ID_LIKE == *suse* ]]; then
+        sudo zypper remove -y rtl8821ce-dkms
+    fi
+fi
 cd rtl8821ce
 sudo m-a prepare
 sudo ./dkms-install.sh

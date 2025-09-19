@@ -13,3 +13,15 @@ _lang_
 source "$SCRIPT_DIR/libs/lang/${langfile}.lib"
 source "$SCRIPT_DIR/libs/helpers.lib"
 sudo_rq
+if [[ "$ID_LIKE" == *suse* ]]; then
+    sudo zypper in -y opi
+    sudo opi codecs
+    zeninf "$msg018"
+elif [[ "$ID_LIKE" =~ (rhel|fedora) ]] || [ "$ID" == "fedora" ]; then
+    rpmfusion_chk
+    _packages=(libavcodec-freeworld gstreamer1-plugins-ugly)
+    _install_
+    zeninf "$msg018"
+else
+    zeninf "$msg077"
+fi
