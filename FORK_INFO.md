@@ -11,7 +11,7 @@ This is a specialized fork of LinuxToys optimized exclusively for Arch Linux and
 - Reduced complexity and improved performance
 
 ### 2. Fixed Arch-Specific Issues
-- **Sudo TTY Issue**: Fixed the `sudo: um terminal é necessário para ler a senha` error
+- **Sudo TTY Issue**: Fixed the `sudo: a terminal is necessary to read the password` error
 - **Password Management**: Implemented proper password handling with `echo "$PASSWD" | sudo -S`
 - **Package Management**: Simplified to use only `pacman`
 
